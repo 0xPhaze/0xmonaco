@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import "./cars/Car.sol";
 import "./utils/SignedWadMath.sol";
@@ -124,7 +124,9 @@ contract Monaco {
 
             // Mark the game as active.
             state = State.ACTIVE;
-        } else require(totalCars < PLAYERS_REQUIRED, "MAX_PLAYERS");
+        } else {
+            require(totalCars < PLAYERS_REQUIRED, "MAX_PLAYERS");
+        }
 
         emit Registered(0, car);
     }
@@ -190,7 +192,9 @@ contract Monaco {
                 }
 
                 // Note: If we were to deploy this on-chain it this line in particular would be pretty wasteful gas-wise.
-                emit TurnCompleted(turns = uint16(currentTurn + 1), getAllCarData(), getAccelerateCost(1), getShellCost(1));
+                emit TurnCompleted(
+                    turns = uint16(currentTurn + 1), getAllCarData(), getAccelerateCost(1), getShellCost(1)
+                    );
             }
         }
     }
@@ -305,13 +309,20 @@ contract Monaco {
         unchecked {
             // prettier-ignore
             return uint256(
-                wadMul(targetPrice, wadExp(unsafeWadMul(wadLn(1e18 - perTurnPriceDecrease),
-                // Theoretically calling toWadUnsafe with turnsSinceStart and sold can overflow without
-                // detection, but under any reasonable circumstance they will never be large enough.
-                // Use sold + 1 as we need the number of the tokens that will be sold (inclusive).
-                // Use turnsSinceStart - 1 since turns start at 1 but here the first turn should be 0.
-                toWadUnsafe(turnsSinceStart - 1) - (wadDiv(toWadUnsafe(sold + 1), sellPerTurnWad))
-            )))) / 1e18;
+                wadMul(
+                    targetPrice,
+                    wadExp(
+                        unsafeWadMul(
+                            wadLn(1e18 - perTurnPriceDecrease),
+                            // Theoretically calling toWadUnsafe with turnsSinceStart and sold can overflow without
+                            // detection, but under any reasonable circumstance they will never be large enough.
+                            // Use sold + 1 as we need the number of the tokens that will be sold (inclusive).
+                            // Use turnsSinceStart - 1 since turns start at 1 but here the first turn should be 0.
+                            toWadUnsafe(turnsSinceStart - 1) - (wadDiv(toWadUnsafe(sold + 1), sellPerTurnWad))
+                        )
+                    )
+                )
+            ) / 1e18;
         }
     }
 
@@ -339,11 +350,17 @@ contract Monaco {
 
         unchecked {
             // Copy over each car's data into the results array.
-            for (uint256 i = 0; i < PLAYERS_REQUIRED; i++) results[i] = getCarData[sortedCars[i]];
+            for (uint256 i = 0; i < PLAYERS_REQUIRED; i++) {
+                results[i] = getCarData[sortedCars[i]];
+            }
         }
     }
 
-    function getAllCarDataAndFindCar(Car carToFind) public view returns (CarData[] memory results, uint256 foundCarIndex) {
+    function getAllCarDataAndFindCar(Car carToFind)
+        public
+        view
+        returns (CarData[] memory results, uint256 foundCarIndex)
+    {
         results = new CarData[](PLAYERS_REQUIRED); // Allocate the array.
 
         // Get a list of cars sorted descendingly by y.

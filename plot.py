@@ -43,27 +43,24 @@ def parse_file(csv_file):
 
 
 files_stats = [
-    # 'logs/prices.csv',
-    # 'logs/sold.csv',
+    'logs/prices.csv',
+    'logs/sold.csv',
 ]
 
-files_cars = [
+files_cars = sorted([
+    'logs/' + file for file in os.listdir('logs') if 'logs/' + file not in files_stats and file.endswith('.csv')
     # 'logs/0x2e234DAe75C793f67A35089C9d99245E1C58470b.csv',
     # 'logs/0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9.csv',
     # 'logs/0xF62849F9A0B5Bf2913b396098F7c7019b51A820a.csv',
-]
+])
 
-for file in os.listdir('logs'):
-    if not file.endswith('.csv'):
-        continue
+assert len(files_cars) == 3, "invalid number of cars"
 
-    if file.startswith('0x'):
-        files_cars.append('logs/' + file)
-    else:
-        files_stats.append('logs/' + file)
+print('files_stats', files_stats)
+print('files_cars', files_cars)
 
 
-def plot(files):
+def plot(files, is_cars):
     styles = ["-", "--", ":"]
     legend_lines = []
     legend1 = None
@@ -78,7 +75,6 @@ def plot(files):
         all_headers.append(headers)
         all_data.append(data)
 
-    is_cars = files[0].startswith('logs/0x')
     placings = None
     final_scores = None
 
@@ -92,12 +88,13 @@ def plot(files):
     def format_label(label, index):
         label = label.replace('logs/', '')
         label = label.replace('.csv', '')
-        if (label.startswith('0x')):
-            label = f'{label[:6]} #{placings[index]}: {final_scores[index]:0.0f}'
+        if is_cars:
+            label = f'{label} #{placings[index]}: {final_scores[index]:0.0f}'
+            label = label.split('_')[-1]
         return label
 
     legend_labels = [format_label(label, i) for i, label in enumerate(files)]
-    legend_title = 'Cars' if legend_labels[0].startswith('0x') else None
+    legend_title = 'Cars' if is_cars else None
 
     for i, _ in enumerate(all_headers):
 
@@ -130,11 +127,11 @@ def plot(files):
 plt.figure(figsize=(12, 10))
 
 plt.subplot(2, 1, 1)
-plot(files_cars)
+plot(files_cars, True)
 
 plt.subplot(2, 1, 2)
 plt.tight_layout()
-plot(files_stats)
+plot(files_stats, False)
 
 plt.savefig('logs/plot.png')
 # plt.show()

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
-import "./Car.sol";
+import "./examples/ExampleCar.sol";
 
-contract ExampleCar is Car {
+contract Car1 is Car {
     constructor(Monaco _monaco) Car(_monaco) {}
 
     function takeYourTurn(Monaco.CarData[] calldata allCars, uint256 ourCarIndex) external override {
@@ -19,16 +19,4 @@ contract ExampleCar is Car {
             monaco.buyShell(1); // This will instantly set the car in front of us' speed to 1.
         }
     }
-}
-
-contract Car1 is ExampleCar {
-    constructor(Monaco _monaco) ExampleCar(_monaco) {}
-}
-
-contract Car2 is ExampleCar {
-    constructor(Monaco _monaco) ExampleCar(_monaco) {}
-}
-
-contract Car3 is ExampleCar {
-    constructor(Monaco _monaco) ExampleCar(_monaco) {}
 }

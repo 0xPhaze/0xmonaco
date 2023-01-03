@@ -3,8 +3,10 @@ pragma solidity 0.8.17;
 
 import "../Monaco.sol";
 
+import "forge-std/console.sol";
+
 abstract contract Car {
-    Monaco internal immutable monaco;
+    Monaco public immutable monaco;
 
     constructor(Monaco _monaco) {
         monaco = _monaco;

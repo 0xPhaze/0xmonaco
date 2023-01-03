@@ -352,6 +352,7 @@ contract Monaco {
             // Copy over each car's data into the results array.
             for (uint256 i = 0; i < PLAYERS_REQUIRED; i++) {
                 results[i] = getCarData[sortedCars[i]];
+                // console.log(results[i].y);
             }
         }
     }

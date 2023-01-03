@@ -5,7 +5,6 @@ import csv
 
 
 def parse_file(csv_file):
-
     headers = []
     data = []
 
@@ -42,24 +41,6 @@ def parse_file(csv_file):
     return (headers[0], headers[1:]), (x_proc, y_proc)
 
 
-files_stats = [
-    'logs/prices.csv',
-    'logs/sold.csv',
-]
-
-files_cars = sorted([
-    'logs/' + file for file in os.listdir('logs') if 'logs/' + file not in files_stats and file.endswith('.csv')
-    # 'logs/0x2e234DAe75C793f67A35089C9d99245E1C58470b.csv',
-    # 'logs/0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9.csv',
-    # 'logs/0xF62849F9A0B5Bf2913b396098F7c7019b51A820a.csv',
-])
-
-assert len(files_cars) == 3, "invalid number of cars"
-
-print('files_stats', files_stats)
-print('files_cars', files_cars)
-
-
 def plot(files, is_cars):
     styles = ["-", "--", ":"]
     legend_lines = []
@@ -88,9 +69,13 @@ def plot(files, is_cars):
     def format_label(label, index):
         label = label.replace('logs/', '')
         label = label.replace('.csv', '')
-        if is_cars:
-            label = f'{label} #{placings[index]}: {final_scores[index]:0.0f}'
-            label = label.split('_')[-1]
+        label = label.replace('Cost', '')
+        label = label.split('/')[-1].split('_')[-1]
+        if index is not None and is_cars:
+            # placing_label = ['W', ' ', 'L'][placings[index] - 1]
+            placing_label = [' ', ' ', ' '][placings[index] - 1]
+            label = f'{label}: {final_scores[index]:0.0f} {placing_label}'
+            # label = label.replace('_', ' ')
         return label
 
     legend_labels = [format_label(label, i) for i, label in enumerate(files)]
@@ -105,7 +90,8 @@ def plot(files, is_cars):
         style_cycler = iter(styles)
 
         for t, y in zip(y_label, y_proc):
-            line, = plt.plot(x_proc, y, next(style_cycler), label=t, c=color)
+            line, = plt.plot(x_proc, y, next(style_cycler),
+                             label=format_label(t, None), c=color)
 
             if color is None:
                 legend_lines.append(line)
@@ -122,16 +108,43 @@ def plot(files, is_cars):
     plt.gca().add_artist(legend1)
     plt.yscale('log')
 
+    # max_y = max([max(line.get_ydata()[-50:]) for line in plt.gca().lines])
+    # plt.ylim([0, max_y])
 
-# Plot the data
-plt.figure(figsize=(12, 10))
 
-plt.subplot(2, 1, 1)
-plot(files_cars, True)
+def parse_logs(dir):
+    files_cars = sorted([
+        f'{dir}/{file}' for file in os.listdir(dir) if file[0].isdigit() and file.endswith('.csv')
+    ])
 
-plt.subplot(2, 1, 2)
-plt.tight_layout()
-plot(files_stats, False)
+    files_stats = [
+        f'{dir}/{file}' for file in os.listdir(dir) if not file[0].isdigit() and file.endswith('.csv')
+    ]
 
-plt.savefig('logs/plot.png')
-# plt.show()
+    assert len(files_cars) == 3, "invalid number of cars"
+
+    # print('files_stats', files_stats)
+    # print('files_cars', files_cars)
+
+    # Plot the data
+    plt.figure(figsize=(12, 10))
+
+    plt.subplot(2, 1, 1)
+    plot(files_cars, True)
+
+    plt.subplot(2, 1, 2)
+    plt.tight_layout()
+    plot(files_stats, False)
+
+    plt.savefig(f'{dir}/plot.png')
+    # plt.show()
+
+
+if __name__ == '__main__':
+    root = 'logs'
+
+    all_dirs = [
+        f'{root}/{dir}' for dir in os.listdir(root) if os.path.isdir(f'{root}/{dir}')]
+
+    for dir in all_dirs:
+        parse_logs(dir)

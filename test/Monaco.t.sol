@@ -6,9 +6,9 @@ import "futils/futils.sol";
 
 import "../src/Monaco.sol";
 
-// import {Strat2 as Car1} from "../src/cars/strategies/Strat2.sol";
-// import {Strat1 as Car2} from "../src/cars/strategies/Strat1.sol";
-// import {Strat1 as Car3} from "../src/cars/strategies/Strat1.sol";
+import {Strat2 as Car1} from "../src/cars/strategies/Strat2.sol";
+import {Strat1 as Car2} from "../src/cars/strategies/Strat1.sol";
+import {Strat1 as Car3} from "../src/cars/strategies/Strat1.sol";
 
 function deployContractCode(bytes memory code) returns (address addr) {
     assembly {
@@ -30,7 +30,6 @@ contract MonacoTest is Test {
     Monaco monaco;
 
     uint256 raceId;
-    uint256 randomSeed;
 
     Car[3] cars;
     mapping(uint256 => string) seeding;
@@ -42,30 +41,37 @@ contract MonacoTest is Test {
     mapping(Car => string) logFile;
 
     function setUp() public {
-        enableLog = true;
+        // enableLog = true;
 
         if (enableLog) vm.ffi(["find", "logs", "-name", "*.csv", "-delete"].toMemory());
     }
 
+    uint256 seed = 122;
+
     function testMultiRace() public returns (uint256) {
+        // function testMultiRace(uint256 seed) public returns (uint256) {
         // function echidna_testMultiRace() public returns (uint256) {
-        randomSeed = 123;
+        uint256 bestScore = 6700;
+        // uint256 bestScore = 3000;
+        uint256 bestPlacing = 18;
+
+        random.seed(seed);
 
         string[3] memory carEntry = [
             // Contracts
             // type(Car1).name,
             // type(Car2).name,
             // type(Car3).name
-            // "Strat2",
-            "Strat1",
             "Strat2",
-            "Strat2"
+            // "Strat1",
             // "Strat1"
-            // "c000r",
-            // "c000r"
-            // "ExampleCar",
             // "Strat2",
+            // "Strat2"
+            // "ExampleCar",
             // "ExampleCar"
+            "c000r",
+            "c000r"
+            // "Strat2",
             // "Strat2"
         ];
 
@@ -84,6 +90,8 @@ contract MonacoTest is Test {
         uint256[3] memory cumulativePlacings;
         uint256[3] memory cumulativeScores;
 
+        uint256[3] memory r = [random.next(), random.next(), random.next()];
+
         for (uint256 i; i < 6; i++) {
             uint8[3] memory perm = perms[i];
 
@@ -93,13 +101,13 @@ contract MonacoTest is Test {
 
             monaco = new Monaco();
 
-            // cars[0] = Car(deployContractCode(abi.encodePacked(creationCodes[perm[0]], abi.encode(monaco, 0, randomSeed))));
-            // cars[1] = Car(deployContractCode(abi.encodePacked(creationCodes[perm[1]], abi.encode(monaco, 1, randomSeed))));
-            // cars[2] = Car(deployContractCode(abi.encodePacked(creationCodes[perm[2]], abi.encode(monaco, 2, randomSeed))));
+            // cars[0] = Car(deployContractCode(abi.encodePacked(creationCodes[perm[0]], abi.encode(monaco, 0, r[0]))));
+            // cars[1] = Car(deployContractCode(abi.encodePacked(creationCodes[perm[1]], abi.encode(monaco, 1, r[1]))));
+            // cars[2] = Car(deployContractCode(abi.encodePacked(creationCodes[perm[2]], abi.encode(monaco, 2, r[2]))));
 
-            cars[0] = Car(deployCode(string.concat(seeding[0], ".sol:", seeding[0]), abi.encode(monaco, 0, randomSeed)));
-            cars[1] = Car(deployCode(string.concat(seeding[1], ".sol:", seeding[1]), abi.encode(monaco, 1, randomSeed)));
-            cars[2] = Car(deployCode(string.concat(seeding[2], ".sol:", seeding[2]), abi.encode(monaco, 2, randomSeed)));
+            cars[0] = Car(deployCode(string.concat(seeding[0], ".sol:", seeding[0]), abi.encode(monaco, 0, r[perm[0]])));
+            cars[1] = Car(deployCode(string.concat(seeding[1], ".sol:", seeding[1]), abi.encode(monaco, 1, r[perm[1]])));
+            cars[2] = Car(deployCode(string.concat(seeding[2], ".sol:", seeding[2]), abi.encode(monaco, 2, r[perm[2]])));
 
             uint256[3] memory placings = runRace();
 
@@ -128,8 +136,15 @@ contract MonacoTest is Test {
 
         if (enableLog) vm.ffi(["python3", "plot.py"].toMemory());
 
+        // if fuzz testing
+        if (msg.data.length > 4) {
+            console.log("final score", cumulativeScores[0]);
+
+            if (bestScore != 0) assertTrue(cumulativeScores[0] < bestScore);
+            if (bestPlacing != 0) assertTrue(cumulativePlacings[0] < bestPlacing);
+        }
+
         return cumulativeScores[0];
-        // return 7000 - cumulativeScores[0];
     }
 
     function getScore(Car car) internal view returns (uint256 y) {

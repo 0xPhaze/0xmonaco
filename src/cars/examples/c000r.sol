@@ -2,13 +2,23 @@
 pragma solidity ^0.8.17;
 
 import "../Car.sol";
+import "forge-std/Test.sol";
 
 /// @author 0age
 /// @notice Be warned that this contract was hastily and iteratively hobbled together and has known bugs.
 contract c000r is Car {
     constructor(Monaco _monaco) Car(_monaco) {}
 
-    function takeYourTurn(Monaco.CarData[] calldata allCars, uint256 ourCarIndex) external override {
+    modifier logGas() {
+        uint256 gas = gasleft();
+        _;
+        gas -= gasleft();
+        console.log("gas:", gas);
+    }
+
+    function takeYourTurn(Monaco.CarData[] calldata allCars, uint256 ourCarIndex) external override 
+    // logGas
+    {
         Monaco.CarData memory ourCar = allCars[ourCarIndex];
 
         // Win if possible.
@@ -36,9 +46,7 @@ contract c000r is Car {
         // Handle early-game; hang back for a bit in hopes that other two players duke it out.
         if (ourCarIndex != 0 && allCars[0].y < 200) {
             // Only move if immobile and not paying gouged prices due to an opponent's big opening move.
-            if (ourCar.speed < 3 && shellCost < 15000) {
-                monaco.buyAcceleration(2);
-            }
+            if (ourCar.speed < 3 && shellCost < 15000) monaco.buyAcceleration(2);
 
             return;
         }

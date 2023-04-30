@@ -11,3 +11,6 @@ rpc_endpoints = { mainnet = "https://rpc.ankr.com/eth", optimism = "https://rpc.
 
 [fmt]
 single_line_statement_blocks = 'single'
+
+[fuzz]
+runs = 200

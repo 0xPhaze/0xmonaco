@@ -13,39 +13,36 @@ contract Strat2 is Car {
     uint256 immutable initialAccAmt;
     uint256 immutable accBuyLimit;
 
-    constructor(Monaco _monaco, uint256, uint256 randomSeed_) Car(_monaco) {
-        random.seed(randomSeed_);
+    constructor(Monaco _monaco, uint256, uint256 randomSeed) Car(_monaco) {
+        random.seed(randomSeed);
 
-        initialAccAmt = random.next(1, 10);
-        accAmt = random.next(1, 10);
-        accBuyLimit = random.next(1, 1000);
+        // initialAccAmt = random.next(1, 10);
+        // accAmt = random.next(1, 10);
+        // accBuyLimit = random.next(1, 10) * 100;
+
+        // initialAccAmt = 2;
+        // accAmt = 8;
+        // accBuyLimit = 400;
+
+        initialAccAmt = 9;
+        accAmt = 7;
+        accBuyLimit = 700;
+
+        console.log("\nparams");
+        console.log("initialAccAmt", initialAccAmt);
+        console.log("accAmt", accAmt);
+        console.log("accBuyLimit", accBuyLimit);
     }
 
     function takeYourTurn(Monaco.CarData[] calldata allCars, uint256 ourCarIndex) external override {
         Monaco.CarData memory ourCar = allCars[ourCarIndex];
 
-        if (monaco.turns() == 1) {
-            monaco.buyAcceleration(initialAccAmt);
+        if (ourCar.speed <= 2) {
+            try monaco.buyAcceleration(initialAccAmt) {} catch (bytes memory) {}
 
             return;
         }
 
-        if (monaco.getAccelerateCost(accAmt) < accBuyLimit) ourCar.balance -= uint24(monaco.buyAcceleration(accAmt));
-
-        // uint256 boostFactor = 6;
-
-        // uint256 accAmt = 1;
-
-        // if (ourCar.speed <= 1) accAmt *= boostFactor;
-
-        // if (ourCar.balance > monaco.getAccelerateCost(accAmt)) {
-        //     ourCar.balance -= uint24(monaco.buyAcceleration(accAmt));
-        // }
-
-        // if (
-        //     ourCarIndex != 0 && allCars[ourCarIndex - 1].speed > ourCar.speed && ourCar.balance > monaco.getShellCost(1)
-        // ) {
-        //     monaco.buyShell(1); // This will instantly set the car in front of us' speed to 1.
-        // }
+        try monaco.buyAcceleration(accAmt) {} catch (bytes memory) {}
     }
 }

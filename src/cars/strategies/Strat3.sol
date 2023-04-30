@@ -1,29 +1,41 @@
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+// // SPDX-License-Identifier: MIT
+// pragma solidity 0.8.17;
 
-import "../Car.sol";
+// import "../Car.sol";
+// import "futils/futils.sol";
 
-/// @dev only try optimizing acceleration
-///      add in factor for when getting shelled
-///      only buy when cheap
-contract Strat3 is Car {
-    constructor(Monaco _monaco) Car(_monaco) {}
+// /// @dev only try optimizing acceleration
+// ///      add in factor for when getting shelled
+// contract Strat2 is Car {
+//     string public name = "Strat2";
 
-    function takeYourTurn(Monaco.CarData[] calldata allCars, uint256 ourCarIndex) external override {
-        Monaco.CarData memory ourCar = allCars[ourCarIndex];
+//     uint256 immutable accAmt;
+//     uint256 immutable initialAccAmt;
+//     uint256 immutable accBuyLimit;
 
-        uint256 shelledFactor = 5;
-        uint256 quantity = 3;
+//     constructor(Monaco _monaco, uint256, uint256 randomSeed) Car(_monaco) {
+//         random.seed(randomSeed);
 
-        bool tooSlow = ourCar.speed <= 2;
-        bool isCheap = monaco.getAccelerateCost(1) < 100;
+//         accAmt = random.next(1, 10);
+//         shellAmt = random.next(1, 10);
+//         initialAccAmt = random.next(1, 10);
+//         accBuyLimit = random.next(1, 10) * 100;
 
-        if (!isCheap && !tooSlow) return;
+//         console.log("\nparams");
+//         console.log("initialAccAmt", initialAccAmt);
+//         console.log("accAmt", accAmt);
+//         console.log("accBuyLimit", accBuyLimit);
+//     }
 
-        if (tooSlow) quantity += shelledFactor;
+//     function takeYourTurn(Monaco.CarData[] calldata allCars, uint256 ourCarIndex) external override {
+//         Monaco.CarData memory ourCar = allCars[ourCarIndex];
 
-        if (ourCar.balance > monaco.getAccelerateCost(quantity)) {
-            ourCar.balance -= uint24(monaco.buyAcceleration(quantity));
-        }
-    }
-}
+//         if (ourCar.speed <= 2) {
+//             try monaco.buyAcceleration(initialAccAmt) {} catch (bytes memory) {}
+
+//             return;
+//         }
+
+//         try monaco.buyAcceleration(accAmt) {} catch (bytes memory) {}
+//     }
+// }
